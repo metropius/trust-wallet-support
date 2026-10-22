@@ -290,8 +290,8 @@
     <!-- JavaScript -->
     <script src="js/main.js"></script>
     <script>
-        // Contact Form Handling
-        document.getElementById('contactForm').addEventListener('submit', function(e) {
+        // Contact Form Handling — posts to backend
+        document.getElementById('contactForm').addEventListener('submit', async function(e) {
             e.preventDefault();
 
             const name = document.getElementById('name').value;
@@ -299,23 +299,27 @@
             const subject = document.getElementById('subject').value;
             const message = document.getElementById('message').value;
 
-            // Show loading state
             const btn = this.querySelector('.submit-btn');
             const originalText = btn.innerHTML;
             btn.innerHTML = `<span>Sending...</span>`;
             btn.disabled = true;
 
-            // Simulate sending (replace with real backend or EmailJS later)
-            setTimeout(() => {
+            try {
+                const res = await fetch('/api/contact', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, email, subject, message })
+                });
+                const data = await res.json();
+                if (!res.ok || !data.success) throw new Error(data.error || 'Failed to send');
                 alert(`✅ Message sent successfully!\n\nThank you, ${name}!\nWe will reply to ${email} shortly.`);
-                
-                // Reset form
                 this.reset();
-                
-                // Reset button
+            } catch (err) {
+                alert('Could not send message: ' + (err.message || 'Please try again.'));
+            } finally {
                 btn.innerHTML = originalText;
                 btn.disabled = false;
-            }, 1200);
+            }
         });
     </script>
 
