@@ -1,6 +1,6 @@
 {
   "name": "trust-wallet-support",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Trust Wallet Support website with Zoho email admin panel",
   "main": "server.js",
   "scripts": {
@@ -8,6 +8,7 @@
     "dev": "node server.js"
   },
   "dependencies": {
+    "cloudinary": "^2.5.1",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
     "express": "^4.21.0",

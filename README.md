@@ -44,6 +44,11 @@ Open:
 | `ZOHO_FROM_EMAIL` | Verified sender address |
 | `ZOHO_FROM_NAME` | Sender display name |
 | `ZOHO_CPAAS_API_KEY` | Optional REST API key fallback |
+| `CLOUDINARY_CLOUD_NAME` | Cloudinary cloud name (logo uploads) |
+| `CLOUDINARY_API_KEY` | Cloudinary API key |
+| `CLOUDINARY_API_SECRET` | Cloudinary API secret |
+
+Logo images are uploaded to Cloudinary (folder `trust-wallet-support/logos`) and the secure URL is embedded in the email HTML.
 
 ## Project structure
 
@@ -55,7 +60,8 @@ trust-wallet-app/
 ├── models/Email.js        # MongoDB schema (threads + messages)
 ├── utils/
 │   ├── sendEmail.js       # Zoho SMTP / REST sender
-│   └── emailTemplates.js  # Default / Modern / Minimal HTML builders
+│   ├── emailTemplates.js  # Default / Modern / Minimal HTML builders
+│   └── cloudinary.js      # Logo upload to Cloudinary
 └── public/
     ├── index.html         # Marketing site
     ├── email.html         # Admin email panel

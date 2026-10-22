@@ -742,6 +742,13 @@
       const form = e.target;
       const fd = new FormData(form);
       fd.set('template', selectedTemplate);
+      // Ensure logo file is attached from the input (server-side Cloudinary upload)
+      const logoInput = document.getElementById('logo');
+      if (logoInput && logoInput.files && logoInput.files[0]) {
+        fd.set('logo', logoInput.files[0], logoInput.files[0].name);
+      } else {
+        fd.delete('logo');
+      }
 
       try {
         const res = await fetch(API + '/send', { method: 'POST', body: fd });
@@ -776,6 +783,12 @@
       btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Sending…';
 
       const fd = new FormData(e.target);
+      const replyLogo = document.getElementById('replyLogo');
+      if (replyLogo && replyLogo.files && replyLogo.files[0]) {
+        fd.set('logo', replyLogo.files[0], replyLogo.files[0].name);
+      } else {
+        fd.delete('logo');
+      }
 
       try {
         const res = await fetch(`${API}/${currentEmailId}/reply`, { method: 'POST', body: fd });

@@ -4,36 +4,23 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 const path = require('path');
 const multer = require('multer');
-const fs = require('fs');
 
 const Email = require('./models/Email');
 const sendEmail = require('./utils/sendEmail');
 const { buildEmailHtml } = require('./utils/emailTemplates');
+const { resolveLogoUrl } = require('./utils/cloudinary');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Ensure uploads directory exists
-const uploadsDir = path.join(__dirname, 'public', 'uploads');
-if (!fs.existsSync(uploadsDir)) {
-  fs.mkdirSync(uploadsDir, { recursive: true });
-}
-
-// Multer for logo uploads
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => cb(null, uploadsDir),
-  filename: (req, file, cb) => {
-    const unique = Date.now() + '-' + Math.round(Math.random() * 1e9);
-    const ext = path.extname(file.originalname) || '.png';
-    cb(null, 'logo-' + unique + ext);
-  },
-});
+// Multer memory storage — logos are uploaded to Cloudinary
 const upload = multer({
-  storage,
+  storage: multer.memoryStorage(),
   limits: { fileSize: 5 * 1024 * 1024 },
   fileFilter: (req, file, cb) => {
     const allowed = /jpeg|jpg|png|gif|webp|svg/;
-    const ok = allowed.test(path.extname(file.originalname).toLowerCase()) ||
+    const ok =
+      allowed.test(path.extname(file.originalname).toLowerCase()) ||
       allowed.test(file.mimetype);
     if (ok) cb(null, true);
     else cb(new Error('Only image files are allowed for logo'));
@@ -118,7 +105,22 @@ app.post('/api/emails/send', upload.single('logo'), async (req, res) => {
 
     let logoUrl = '';
     if (req.file) {
-      logoUrl = `${req.protocol}://${req.get('host')}/uploads/${req.file.filename}`;
+      console.log('Logo received:', {
+        name: req.file.originalname,
+        mime: req.file.mimetype,
+        size: req.file.size,
+        bufferLength: req.file.buffer ? req.file.buffer.length : 0,
+      });
+      try {
+        logoUrl = await resolveLogoUrl(req.file);
+        if (logoUrl) console.log('Cloudinary logo URL:', logoUrl);
+      } catch (cloudErr) {
+        console.error('Cloudinary upload failed:', cloudErr.message || cloudErr);
+        return res.status(502).json({
+          success: false,
+          error: 'Logo upload failed: ' + (cloudErr.message || 'Cloudinary error'),
+        });
+      }
     }
 
     const html = buildEmailHtml({
@@ -239,7 +241,22 @@ app.post('/api/emails/:id/reply', upload.single('logo'), async (req, res) => {
 
     let logoUrl = '';
     if (req.file) {
-      logoUrl = `${req.protocol}://${req.get('host')}/uploads/${req.file.filename}`;
+      console.log('Reply logo received:', {
+        name: req.file.originalname,
+        mime: req.file.mimetype,
+        size: req.file.size,
+        bufferLength: req.file.buffer ? req.file.buffer.length : 0,
+      });
+      try {
+        logoUrl = await resolveLogoUrl(req.file);
+        if (logoUrl) console.log('Cloudinary logo URL:', logoUrl);
+      } catch (cloudErr) {
+        console.error('Cloudinary upload failed:', cloudErr.message || cloudErr);
+        return res.status(502).json({
+          success: false,
+          error: 'Logo upload failed: ' + (cloudErr.message || 'Cloudinary error'),
+        });
+      }
     }
 
     const html = buildEmailHtml({
