@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Email Admin | Trust Wallet Support</title>
+  <title>Email Admin |</title>
   <meta name="theme-color" content="#0D7CEB">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -424,6 +424,12 @@
             </div>
 
             <div>
+              <label for="senderName">Sender Name (Zoho)</label>
+              <input type="text" id="senderName" name="senderName" maxlength="120" placeholder="Leave blank to use the configured default sender name">
+              <p style="font-size:0.8rem;color:var(--muted);margin-top:6px;">This name is sent to Zoho as the display name for this email. It does not change your verified sender email address.</p>
+            </div>
+
+            <div>
               <label>Template</label>
               <div class="template-cards">
                 <div class="template-card selected" data-template="default">
@@ -643,6 +649,7 @@
             <div class="msg-meta">
               <span><i class="fa-regular fa-clock"></i> ${formatDate(m.sentAt)}</span>
               <span>Template: ${escapeHtml(m.template || 'default')}</span>
+              ${m.senderName ? `<span>Sender: ${escapeHtml(m.senderName)}</span>` : ''}
               ${m.provider ? `<span>Provider: ${escapeHtml(m.provider)}</span>` : ''}
               ${m.buttonText ? `<span>Button: ${escapeHtml(m.buttonText)}</span>` : ''}
               ${m.logoUrl ? `<span>Logo attached</span>` : ''}
@@ -678,6 +685,11 @@
                   <option value="modern">Modern</option>
                   <option value="minimal">Minimal</option>
                 </select>
+              </div>
+              <div>
+                <label for="replySenderName">Sender Name (Zoho)</label>
+                <input type="text" id="replySenderName" name="senderName" maxlength="120" placeholder="Leave blank to use the configured default sender name">
+                <p style="font-size:0.8rem;color:var(--muted);margin-top:6px;">This name is sent to Zoho as the display name for this reply. It does not change your verified sender email address.</p>
               </div>
               <div>
                 <label for="replyMessage">Message *</label>

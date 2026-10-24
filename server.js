@@ -18,12 +18,20 @@ const upload = multer({
   storage: multer.memoryStorage(),
   limits: { fileSize: 5 * 1024 * 1024 },
   fileFilter: (req, file, cb) => {
-    const allowed = /jpeg|jpg|png|gif|webp|svg/;
-    const ok =
-      allowed.test(path.extname(file.originalname).toLowerCase()) ||
-      allowed.test(file.mimetype);
-    if (ok) cb(null, true);
-    else cb(new Error('Only image files are allowed for logo'));
+    const allowedExtensions = new Set([
+      '.jpg', '.jpeg', '.png', '.gif', '.webp', '.svg', '.avif', '.bmp', '.tif', '.tiff',
+    ]);
+    const allowedMimeTypes = new Set([
+      'image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml',
+      'image/avif', 'image/bmp', 'image/tiff',
+    ]);
+    const extension = path.extname(file.originalname || '').toLowerCase();
+    const mimeType = String(file.mimetype || '').toLowerCase();
+    if (allowedExtensions.has(extension) && allowedMimeTypes.has(mimeType)) {
+      cb(null, true);
+    } else {
+      cb(new Error('Only PNG, JPG, GIF, WEBP, SVG, AVIF, BMP or TIFF image files are allowed for logo'));
+    }
   },
 });
 
@@ -88,6 +96,7 @@ app.post('/api/emails/send', upload.single('logo'), async (req, res) => {
       recipient,
       subject,
       message,
+      senderName = '',
       template = 'default',
       buttonText = '',
       buttonUrl = '',
@@ -142,6 +151,7 @@ app.post('/api/emails/send', upload.single('logo'), async (req, res) => {
         subject,
         html,
         text: message,
+        fromName: String(senderName || '').trim(),
       });
     } catch (sendErr) {
       console.error('Send failed:', sendErr.message);
@@ -154,6 +164,7 @@ app.post('/api/emails/send', upload.single('logo'), async (req, res) => {
         messages: [
           {
             subject,
+            senderName: String(senderName || '').trim(),
             body: message,
             html,
             template,
@@ -185,6 +196,7 @@ app.post('/api/emails/send', upload.single('logo'), async (req, res) => {
       messages: [
         {
           subject,
+          senderName: String(senderName || '').trim(),
           body: message,
           html,
           template,
@@ -225,6 +237,7 @@ app.post('/api/emails/:id/reply', upload.single('logo'), async (req, res) => {
     const {
       subject,
       message,
+      senderName = '',
       template = 'default',
       buttonText = '',
       buttonUrl = '',
@@ -278,6 +291,7 @@ app.post('/api/emails/:id/reply', upload.single('logo'), async (req, res) => {
         subject: replySubject,
         html,
         text: message,
+        fromName: String(senderName || '').trim(),
       });
     } catch (sendErr) {
       return res.status(502).json({
@@ -288,6 +302,7 @@ app.post('/api/emails/:id/reply', upload.single('logo'), async (req, res) => {
 
     emailDoc.messages.push({
       subject: replySubject,
+      senderName: String(senderName || '').trim(),
       body: message,
       html,
       template,
